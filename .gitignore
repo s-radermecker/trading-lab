@@ -1,0 +1,29 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
+
+# Local run outputs
+lab_runs/
+batch_results/
+
+# Local data files
+*.csv
+
+# Keep selected example CSVs if needed later
+!Sample/EURUSD_M15.csv
+!Sample/GBPUSD_M15.csv
+!Sample/USDJPY_M15.csv
+
+# Jupyter / misc
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+prompt_methodologie_labo_ia.md
