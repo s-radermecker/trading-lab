@@ -21,6 +21,9 @@ USD_POSITIVE_TAGS = {
     "strong_jobs",
     "usd_supportive",
     "higher_rates",
+    "growth_positive",
+    "surprise_positive",
+    "not_priced_in",
 }
 
 USD_NEGATIVE_TAGS = {
@@ -29,7 +32,76 @@ USD_NEGATIVE_TAGS = {
     "weak_jobs",
     "usd_negative",
     "lower_rates",
+    "growth_negative",
+    "surprise_negative",
 }
+
+EUR_POSITIVE_TAGS = {
+    "eur_positive",
+    "euro_positive",
+    "ecb_hawkish",
+    "eurozone_growth_positive",
+}
+
+EUR_NEGATIVE_TAGS = {
+    "eur_negative",
+    "euro_negative",
+    "ecb_dovish",
+    "eurozone_growth_negative",
+    "inflation_downside",
+    "lower_rates",
+    "dovish",
+}
+
+GBP_POSITIVE_TAGS = {"gbp_positive", "boe_hawkish"}
+GBP_NEGATIVE_TAGS = {"gbp_negative", "boe_dovish"}
+
+JPY_POSITIVE_TAGS = {"jpy_positive", "boj_hawkish"}
+JPY_NEGATIVE_TAGS = {"jpy_negative", "boj_dovish"}
+
+AUD_POSITIVE_TAGS = {"aud_positive", "rba_hawkish"}
+AUD_NEGATIVE_TAGS = {"aud_negative", "rba_dovish"}
+
+CAD_POSITIVE_TAGS = {"cad_positive", "boc_hawkish"}
+CAD_NEGATIVE_TAGS = {"cad_negative", "boc_dovish"}
+
+CURRENCY_POSITIVE_MAP = {
+    "USD": USD_POSITIVE_TAGS,
+    "EUR": EUR_POSITIVE_TAGS,
+    "GBP": GBP_POSITIVE_TAGS,
+    "JPY": JPY_POSITIVE_TAGS,
+    "AUD": AUD_POSITIVE_TAGS,
+    "CAD": CAD_POSITIVE_TAGS,
+}
+
+CURRENCY_NEGATIVE_MAP = {
+    "USD": USD_NEGATIVE_TAGS,
+    "EUR": EUR_NEGATIVE_TAGS,
+    "GBP": GBP_NEGATIVE_TAGS,
+    "JPY": JPY_NEGATIVE_TAGS,
+    "AUD": AUD_NEGATIVE_TAGS,
+    "CAD": CAD_NEGATIVE_TAGS,
+}
+
+
+def _score_pair(tag_set: set, asset: str) -> int:
+    parts = []
+    if len(asset) == 6:
+        parts = [asset[:3], asset[3:]]
+    elif len(asset) == 7 and asset[3] == "/":
+        parts = [asset[:3], asset[4:]]
+    else:
+        parts = ["USD"]
+
+    base = parts[0].upper()
+    quote = parts[1].upper() if len(parts) > 1 else "USD"
+
+    score = 0
+    score += len(tag_set.intersection(CURRENCY_POSITIVE_MAP.get(base, set())))
+    score -= len(tag_set.intersection(CURRENCY_NEGATIVE_MAP.get(base, set())))
+    score -= len(tag_set.intersection(CURRENCY_POSITIVE_MAP.get(quote, set())))
+    score += len(tag_set.intersection(CURRENCY_NEGATIVE_MAP.get(quote, set())))
+    return score
 
 
 def build_macro_thesis(
@@ -89,34 +161,37 @@ def build_macro_thesis(
 
         tag_set = set(info.tags)
 
-        positive_hits = len(tag_set.intersection(USD_POSITIVE_TAGS))
-        negative_hits = len(tag_set.intersection(USD_NEGATIVE_TAGS))
+        pair_score = 0
+        if asset_scope:
+            for asset in asset_scope:
+                pair_score += _score_pair(tag_set, asset)
+        else:
+            positive_hits = len(tag_set.intersection(USD_POSITIVE_TAGS))
+            negative_hits = len(tag_set.intersection(USD_NEGATIVE_TAGS))
+            pair_score += positive_hits - negative_hits
 
-        usd_score += positive_hits
-        usd_score -= negative_hits
+        usd_score += pair_score
 
-        if positive_hits > 0:
+        if pair_score != 0:
             key_drivers.append(info.title)
-
-        if negative_hits > 0:
-            counter_arguments.append(info.title)
 
         if info.event_type.value in {"data_release", "central_bank"}:
             trigger_watchlist.append(info.title)
 
     avg_confidence = round(total_confidence / len(macro_infos))
     avg_importance = round(total_importance / len(macro_infos))
+    primary_asset = asset_scope[0] if asset_scope else "UNKNOWN"
 
     if usd_score >= 2:
         directional_bias = DirectionalBias.BULLISH
-        state_label = "usd_macro_supportive"
+        state_label = f"macro_bullish_{primary_asset.lower()}"
         conviction_score = min(85, 45 + usd_score * 10)
         uncertainty_score = max(15, 70 - usd_score * 10)
         tradable = True
         recommended_action = RecommendedAction.LONG_BIAS
     elif usd_score <= -2:
         directional_bias = DirectionalBias.BEARISH
-        state_label = "usd_macro_negative"
+        state_label = f"macro_bearish_{primary_asset.lower()}"
         conviction_score = min(85, 45 + abs(usd_score) * 10)
         uncertainty_score = max(15, 70 - abs(usd_score) * 10)
         tradable = True
@@ -130,10 +205,8 @@ def build_macro_thesis(
         recommended_action = RecommendedAction.WATCHLIST
 
     data_quality_score = round((avg_confidence + avg_importance) / 2)
-
     mispricing_score = conviction_score if directional_bias != DirectionalBias.MIXED else 25
     trigger_readiness_score = min(80, 20 + len(trigger_watchlist) * 10)
-
     preferred_styles = [StrategyStyle.CONTINUATION, StrategyStyle.BREAKOUT] if tradable else []
     forbidden_styles = [StrategyStyle.RANGE_FADE] if tradable else []
 
