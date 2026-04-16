@@ -1,12 +1,12 @@
 # Trading Lab
 
-A modular market research and decision engine built to experiment with trading ideas and progressively integrate the seven pillars of trading into a unified architecture.
+A modular market research and decision engine built to experiment with trading ideas and progressively integrate the seven pillars of trading into a unified architecture — now powered by real-time AI agents analyzing live market news.
 
 ## Project origin
 
 Trading Lab started as a personal research project driven by my passion for financial markets. My initial objective was not to build a finished trading bot, but to create a modular laboratory where I could experiment with indicators, decisions and market theses, observe their impact on charts, and search for better combinations through backtesting and optimization.
 
-Developed seriously on my own time, the project progressively evolved from a technical research base into a broader decision architecture.
+Developed seriously on my own time, the project progressively evolved from a technical research base into a broader decision architecture — and eventually into a live AI-powered analysis pipeline.
 
 ## Core idea
 
@@ -39,65 +39,31 @@ Trading Lab is the continuation of that conviction: an attempt to translate thes
 
 ## Current capabilities
 
-The project currently includes two complementary layers:
+The project currently includes three complementary layers:
 
-### 1. Historical Trading Lab / research base
-- backtesting on personal chart/data files
-- experimentation with multiple technical strategies
-- parameter optimization and combination search
-- early grading / selection logic to compare setups
-- local research workflows without depending entirely on external platforms
+### 1. Historical research base
+- Backtesting on personal chart and data files
+- Experimentation with multiple technical strategies
+- Parameter optimization and combination search
+- Early grading and selection logic to compare setups
+- Local research workflows without depending on external platforms
 
-### 2. New modular decision engine (v1)
-- standardized `MarketInfoObject`, `PillarThesisObject` and `GlobalThesisObject`
-- `macro_pillar.py`
-- `regime_pillar.py`
-- `sentiment_pillar.py`
-- `global_synthesis.py`
-- `risk_pillar.py`
-- `process_strategy_pillar.py`
-- `execution_pillar.py`
-- `pipeline_v1.py`
-- JSON journaling of runs
-- run registry and run viewer
+### 2. Modular decision engine (v1)
+- Standardized `MarketInfoObject`, `PillarThesisObject` and `GlobalThesisObject`
+- `macro_pillar.py` — macro scoring with multi-currency pair logic
+- `regime_pillar.py` — price action regime detection
+- `sentiment_pillar.py` — sentiment scoring with crowding and excess detection
+- `global_synthesis.py` — combines all pillars into one global thesis
+- `risk_pillar.py` — risk posture calculator
+- `process_strategy_pillar.py` — strategy selection engine
+- `execution_pillar.py` — execution permission logic
+- `pipeline_v1.py` — full pipeline orchestrator
+- JSON journaling of runs and run registry
 
-## Current architecture
+### 3. Real-time AI agents (new)
+- `macro_agent.py` — reads raw news text, produces structured macro `MarketInfoObject` via LLM
+- `sentiment_agent.py` — reads raw news text, detects risk regime and sentiment via LLM
+- `connectors/investinglive.py` — real-time forex news scraper
+- Full pipeline: **live news → Groq LLM → structured thesis → trade signal**
 
-The current architecture is organized around a modular pipeline:
-
-1. Market information is normalized into `MarketInfoObject`
-2. Pillars generate structured theses
-3. A global synthesis aggregates the main context layers
-4. A risk layer gates exposure
-5. A process layer transforms the thesis into an actionable plan
-6. An execution layer decides whether the setup is realistically executable
-7. Each run can be journaled and indexed
-
-This architecture is designed so that future data connectors can be added without rewriting the decision logic itself.
-
-## What I learned through this project
-
-Beyond markets themselves, Trading Lab has been a major learning framework for me. Through this project, I developed or strengthened skills in:
-
-- AI-assisted project building
-- prompting and iterative collaboration with AI systems
-- VS Code and terminal workflows
-- Python project structuring
-- modular reasoning and system design
-- backtesting and research logic
-- translating practical market intuition into a more formal architecture
-
-## Roadmap
-
-The next major steps include:
-
-- improving the internal quality of each pillar
-- refining scoring, conflicts and trigger logic
-- connecting the system to selected external data sources
-- extending journaling and run analysis
-- progressively integrating more of the seven pillars into the final lab
-- moving toward a more complete multi-pillar research and execution framework
-
-## Disclaimer
-
-This repository is a research project in active development. It does not claim proven profitability, institutional-grade execution, or live deployment readiness. Its purpose is to build a structured market research and decision framework progressively and seriously.
+### Live example output
