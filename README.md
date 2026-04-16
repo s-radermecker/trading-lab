@@ -67,3 +67,8 @@ The project currently includes three complementary layers:
 - Full pipeline: **live news → Groq LLM → structured thesis → trade signal**
 
 ### Live example output
+
+> Article: "USDJPY extends drop as US dollar stays on backfoot amid US-Iran optimism"  
+> Macro agent: BEARISH USD — tags: usd_negative, geopolitical_risk, risk_on  
+> Sentiment agent: MIXED — tags: us_iran, optimism, flight_to_safety  
+> Global thesis: WAIT — contradictory signals, trigger required before any trade
